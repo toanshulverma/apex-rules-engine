@@ -56,3 +56,14 @@ exp.set('1', true);
 exp.set('2', true);
 System.assertEquals(false, exp.evaluate());
 ```
+
+**Evaluate (0 != 2) && ( 3 < 4 )**
+```
+LogicalOperationHelper.Expression exp = new LogicalOperationHelper().parseLogicalExpression('(0 != 2) && ( 3 < 4 )');
+
+exp.set('0', 5000);
+exp.set('2', 5000);
+exp.set('3', 4000);
+exp.set('4', 6000);
+System.assertEquals(false, exp.evaluate());
+```
