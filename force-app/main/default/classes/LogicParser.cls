@@ -1,3 +1,41 @@
+/*
+
+Open Source code
+Repo: https://github.com/seanpat09/apex-rules-engine
+
+License
+MIT License
+
+Copyright (c) 2021 Sean Cuevo
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+
+//--------------------- FORK DETAILS
+
+Repo: https://github.com/toanshulverma/apex-rules-engine
+Additional Capabilities: 
+1. Additional support for comparison expressions (<, >, =, !=)
+
+*/
+
 public with sharing class LogicParser {
     private Integer index = 0;
     public Expression parseLogicalExpression(String logicalExpression) {
@@ -7,12 +45,10 @@ public with sharing class LogicParser {
     }
 
     private String normalizeLogicalExpression(String exp){
-        System.debug(exp);
         exp = exp.replace(' ', '');
-        System.debug(exp);
-
+        
         //Find the following tokens: number, open parens, close parens, &&, ||, !
-        Pattern p = Pattern.compile('(\\d+|\\(|\\)|&{2}|\\|{2}|\\!)');
+        Pattern p = Pattern.compile('(\\d+|\\(|\\)|\\!(=)|\\=|&{2}|\\|{2}|\\!|\\<|\\>)');
         Matcher pm = p.matcher( exp );
 
         String formattedExpression = '';
@@ -20,7 +56,7 @@ public with sharing class LogicParser {
             formattedExpression += pm.group() + ' ';
         }
 
-        System.debug(formattedExpression);
+        // system.debug(formattedExpression);
         return formattedExpression.trim();
     }
 
@@ -32,11 +68,12 @@ public with sharing class LogicParser {
         while(this.index < tokens.size()) {
             String token = tokens[this.index];
 
-            System.debug('>>>> Current token: ' + token);
+            // system.debug('>>>> Current token: ' + token);
             if (token == '!') {
                 stagedNotComposite = new NotComposite();
 
-            } else if (token == '(') {
+            }
+            else if (token == '(') {
                 this.index++;
                 Expression childExpression = buildExpression(tokens);
                 if(stagedNotComposite != null) {
@@ -48,25 +85,54 @@ public with sharing class LogicParser {
                 } else {
                     baseComposite.add(childExpression);
                 }
-
-            } else if (token == ')') {
+            }
+            else if (token == ')') {
                 return baseComposite;
 
-            } else if (token == '&&') {
+            }
+            else if (token == '&&') {
                 if (baseComposite == null) {
                     baseComposite = new AndComposite();
                     baseComposite.add(stagedVariable);
                     stagedVariable = null;
                 }
-
-            } else if (token == '||') {
+            }
+            else if (token == '||') {
                 if (baseComposite == null) {
                     baseComposite = new OrComposite();
                     baseComposite.add(stagedVariable);
                     stagedVariable = null;
                 }
-
-            } else {
+            }
+            else if (token == '>') {
+                if (baseComposite == null) {
+                    baseComposite = new GreaterThanComposite();
+                    baseComposite.add(stagedVariable);
+                    stagedVariable = null;
+                }
+            }
+            else if (token == '<') {
+                if (baseComposite == null) {
+                    baseComposite = new LessThanComposite();
+                    baseComposite.add(stagedVariable);
+                    stagedVariable = null;
+                }
+            }
+            else if (token == '=') {
+                if (baseComposite == null) {
+                    baseComposite = new EqualsComposite();
+                    baseComposite.add(stagedVariable);
+                    stagedVariable = null;
+                }
+            }
+            else if (token == '!=') {
+                if (baseComposite == null) {
+                    baseComposite = new NotEqualsComposite();
+                    baseComposite.add(stagedVariable);
+                    stagedVariable = null;
+                }
+            } 
+            else {
                 Expression newVariable;
 
                 if(stagedNotComposite != null) {
@@ -89,8 +155,8 @@ public with sharing class LogicParser {
 
     public interface Expression {
         Expression add(Expression expr);
-        Expression set(String name, Boolean value);
-        Boolean evaluate();
+        Expression set(String name, Object value);
+        Object evaluate(); 
     }
 
     public abstract class Composite implements Expression{
@@ -99,19 +165,21 @@ public with sharing class LogicParser {
         public Expression add(Expression expr){
             children.add(expr); return this;
         }
-        public Expression set(String name, Boolean value){
-            for(Expression expr : children) expr.set(name,value);
+        public Expression set(String name, Object value){
+            for(Expression expr : children) {
+                expr.set(name,value);
+            }
             return this;
         }
-        public abstract Boolean evaluate();
+        public abstract Object evaluate();
         public Boolean hasChildren{get{ return !children.isEmpty(); }}
     }
 
     public class AndComposite extends Composite{
-        public override Boolean evaluate(){
+        public override Object evaluate(){
             for(Expression expr : children) {
-                if(!expr.evaluate()) {
-                  return false;
+                if(! (Boolean) expr.evaluate()) {
+                    return false;
                 }
             }
 
@@ -120,9 +188,9 @@ public with sharing class LogicParser {
     }
 
     public class OrComposite extends Composite{
-        public override Boolean evaluate(){
+        public override Object evaluate(){
             for(Expression expr : children) {
-                if(expr.evaluate()) {
+                if((Boolean) expr.evaluate()) {
                     return true;
                 }
             }
@@ -131,25 +199,57 @@ public with sharing class LogicParser {
     }
 
     public class NotComposite extends Composite {
-        public override Boolean evaluate(){
-            return !children[0].evaluate();
+        public override Object evaluate(){
+            return ! (Boolean) children[0].evaluate();
+        }
+    }
+
+    public class GreaterThanComposite extends Composite {
+        public override Object evaluate(){
+            Double val1 = (Double) children[0].evaluate();
+            Double val2 = (Double) children[1].evaluate();
+            return val1 > val2;
+        }
+    }
+
+    public class LessThanComposite extends Composite {
+        public override Object evaluate(){
+            Double val1 = (Double) children[0].evaluate();
+            Double val2 = (Double) children[1].evaluate();
+            return val1 < val2;
+        }
+    }
+
+    public class EqualsComposite extends Composite {
+        public override Object evaluate(){
+            Double val1 = (Double) children[0].evaluate();
+            Double val2 = (Double) children[1].evaluate();
+            return val1 == val2;
+        }
+    }
+
+    public class NotEqualsComposite extends Composite {
+        public override Object evaluate(){
+            Double val1 = (Double) children[0].evaluate();
+            Double val2 = (Double) children[1].evaluate();
+            return val1 != val2;
         }
     }
 
     public class Variable implements Expression{
         public String  name  {get;private set;}
-        public Boolean value {get;private set;}
+        public Object value {get;private set;}
 
         public Variable(String name){ this.name = name; }
 
         public Expression add(Expression expr){ return this; }
 
-        public Expression set(String name, Boolean value){
+        public Expression set(String name, Object value){
             if(this.name != null && this.name.equalsIgnoreCase(name)) {
                 this.value = value;
             }
             return this;
         }
-        public Boolean evaluate(){ return value; }
+        public Object evaluate(){ return value; }
     }
 }
