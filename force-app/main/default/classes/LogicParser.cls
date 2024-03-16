@@ -1,7 +1,7 @@
 /*
 
 Open Source code
-Repo: https://github.com/seanpat09/apex-rules-engine
+Repo: https://github.com/toanshulverma/apex-rules-engine
 
 License
 MIT License
@@ -26,13 +26,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-
-
-//--------------------- FORK ADDITIONS
-
-Repo: https://github.com/toanshulverma/apex-rules-engine
-Additional Capabilities: 
-1. Additional support for comparison expressions (<, >, =, !=, >=, <=)
+Forked from Repo: https://github.com/seanpat09/apex-rules-engine
 
 */
 
@@ -220,49 +214,43 @@ public with sharing class LogicParser {
 
     public class GreaterThanComposite extends Composite {
         public override Object evaluate(){
-            Double val1 = (Double) children[0].evaluate();
-            Double val2 = (Double) children[1].evaluate();
-            return val1 > val2;
+            DataTypeComparator comparator = DataTypeComparatorFactory.get(children);
+            return comparator.greaterThan();
         }
     }
 
     public class GreaterThanEqualToComposite extends Composite {
         public override Object evaluate(){
-            Double val1 = (Double) children[0].evaluate();
-            Double val2 = (Double) children[1].evaluate();
-            return val1 >= val2;
+            DataTypeComparator comparator = DataTypeComparatorFactory.get(children);
+            return comparator.greaterThanOrEqual();
         }
     }
 
     public class LessThanComposite extends Composite {
         public override Object evaluate(){
-            Double val1 = (Double) children[0].evaluate();
-            Double val2 = (Double) children[1].evaluate();
-            return val1 < val2;
+            DataTypeComparator comparator = DataTypeComparatorFactory.get(children);
+            return comparator.lessThan();
         }
     }
 
     public class LessThanEqualToComposite extends Composite {
         public override Object evaluate(){
-            Double val1 = (Double) children[0].evaluate();
-            Double val2 = (Double) children[1].evaluate();
-            return val1 <= val2;
+            DataTypeComparator comparator = DataTypeComparatorFactory.get(children);
+            return comparator.lessThanOrEqual();
         }
     }
 
     public class EqualsComposite extends Composite {
         public override Object evaluate(){
-            Double val1 = (Double) children[0].evaluate();
-            Double val2 = (Double) children[1].evaluate();
-            return val1 == val2;
+            DataTypeComparator comparator = DataTypeComparatorFactory.get(children);
+            return comparator.equalTo();
         }
     }
 
     public class NotEqualsComposite extends Composite {
         public override Object evaluate(){
-            Double val1 = (Double) children[0].evaluate();
-            Double val2 = (Double) children[1].evaluate();
-            return val1 != val2;
+            DataTypeComparator comparator = DataTypeComparatorFactory.get(children);
+            return comparator.notEqualTo();
         }
     }
 
