@@ -156,4 +156,57 @@ private with sharing class LogicParser_TEST {
         exp.set('4', false);
         System.assertEquals(false, exp.evaluate());
     }
+
+
+    //(1 >= 2) || (3 <= 4)
+    @isTest
+    private static void shouldParse_UseCase9() {
+
+        LogicParser.Expression exp = new LogicParser().parseLogicalExpression('(1 >= 2) || (3 <= 4)');
+        exp.set('1', 6000);
+        exp.set('2', 6000);
+        exp.set('3', 3000);
+        exp.set('4', 4000);
+        
+        System.assertEquals(true, exp.evaluate());
+        
+        exp.set('1', 3000);
+        exp.set('2', 6000);
+        exp.set('3', 3000);
+        exp.set('4', 4000);
+        System.assertEquals(true, exp.evaluate());
+
+        exp.set('1', 3000);
+        exp.set('2', 6000);
+        exp.set('3', 5000);
+        exp.set('4', 4000);
+        System.assertEquals(false, exp.evaluate());
+    }
+
+    //(1 = 2) || (3 != 4)
+    @isTest
+    private static void shouldParse_UseCase10() {
+
+        LogicParser.Expression exp = new LogicParser().parseLogicalExpression('(1 = 2) || (3 != 4)');
+        exp.set('1', 6000);
+        exp.set('2', 6000);
+        exp.set('3', 3000);
+        exp.set('4', 4000);
+        
+        System.assertEquals(true, exp.evaluate());
+        
+        exp.set('1', 3000);
+        exp.set('2', 6000);
+        exp.set('3', 3000);
+        exp.set('4', 4000);
+        System.assertEquals(true, exp.evaluate());
+
+        exp.set('1', 3000);
+        exp.set('2', 6000);
+        exp.set('3', 5000);
+        exp.set('4', 5000);
+        System.assertEquals(false, exp.evaluate());
+    }
+
+
 }

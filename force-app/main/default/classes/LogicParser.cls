@@ -28,11 +28,11 @@ SOFTWARE.
 
 
 
-//--------------------- FORK DETAILS
+//--------------------- FORK ADDITIONS
 
 Repo: https://github.com/toanshulverma/apex-rules-engine
 Additional Capabilities: 
-1. Additional support for comparison expressions (<, >, =, !=)
+1. Additional support for comparison expressions (<, >, =, !=, >=, <=)
 
 */
 
@@ -48,7 +48,7 @@ public with sharing class LogicParser {
         exp = exp.replace(' ', '');
         
         //Find the following tokens: number, open parens, close parens, &&, ||, !
-        Pattern p = Pattern.compile('(\\d+|\\(|\\)|\\!(=)|\\=|&{2}|\\|{2}|\\!|\\<|\\>)');
+        Pattern p = Pattern.compile('(\\d+|\\(|\\)|\\!=|\\<=|\\>=|\\=|&{2}|\\|{2}|\\!|\\<|\\>)');
         Matcher pm = p.matcher( exp );
 
         String formattedExpression = '';
@@ -104,6 +104,20 @@ public with sharing class LogicParser {
                     stagedVariable = null;
                 }
             }
+            else if (token == '>=') {
+                if (baseComposite == null) {
+                    baseComposite = new GreaterThanEqualToComposite();
+                    baseComposite.add(stagedVariable);
+                    stagedVariable = null;
+                }
+            }
+            else if (token == '<=') {
+                if (baseComposite == null) {
+                    baseComposite = new LessThanEqualToComposite();
+                    baseComposite.add(stagedVariable);
+                    stagedVariable = null;
+                }
+            } 
             else if (token == '>') {
                 if (baseComposite == null) {
                     baseComposite = new GreaterThanComposite();
@@ -131,7 +145,7 @@ public with sharing class LogicParser {
                     baseComposite.add(stagedVariable);
                     stagedVariable = null;
                 }
-            } 
+            }
             else {
                 Expression newVariable;
 
@@ -212,11 +226,27 @@ public with sharing class LogicParser {
         }
     }
 
+    public class GreaterThanEqualToComposite extends Composite {
+        public override Object evaluate(){
+            Double val1 = (Double) children[0].evaluate();
+            Double val2 = (Double) children[1].evaluate();
+            return val1 >= val2;
+        }
+    }
+
     public class LessThanComposite extends Composite {
         public override Object evaluate(){
             Double val1 = (Double) children[0].evaluate();
             Double val2 = (Double) children[1].evaluate();
             return val1 < val2;
+        }
+    }
+
+    public class LessThanEqualToComposite extends Composite {
+        public override Object evaluate(){
+            Double val1 = (Double) children[0].evaluate();
+            Double val2 = (Double) children[1].evaluate();
+            return val1 <= val2;
         }
     }
 
