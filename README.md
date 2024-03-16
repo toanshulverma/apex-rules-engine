@@ -9,6 +9,7 @@ Value of tokens can be set as :
 - **Double**, for example *123.23*
 - **Integer** - for example *34*
 - **Boolean** - for example, *True* or *False*
+- **String** - for example, *Approved*
 
 ## Logical Operators Supported
 |Operator|Usage|
@@ -109,6 +110,17 @@ exp.set('1', 6000);
 exp.set('2', 6000);
 exp.set('3', 3000);
 exp.set('4', 4000);
+
+System.assertEquals(true, exp.evaluate());
+```
+
+**Evaluate for String values (1 = 2) || (3 != 4)**
+```
+LogicParser.Expression exp = new LogicParser().parseLogicalExpression('(1 = 2) || (3 != 4)');
+exp.set('1', 'A');
+exp.set('2', 'B');
+exp.set('3', 'C');
+exp.set('4', 'D');
 
 System.assertEquals(true, exp.evaluate());
 ```
