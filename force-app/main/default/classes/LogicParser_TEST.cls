@@ -265,5 +265,30 @@ private with sharing class LogicParser_TEST {
         System.assertEquals(false, exp.evaluate());
     }
 
+    //String comparison - (1 > 2) || (3 < 4) 
+    @isTest
+    private static void shouldParse_UseCase12() {
+
+        LogicParser.Expression exp = new LogicParser().parseLogicalExpression('(1 > 2) || (3 < 4)');
+        exp.set('1', 'B');
+        exp.set('2', 'A');
+        exp.set('3', 'C');
+        exp.set('4', 'D');
+        
+        System.assertEquals(true, exp.evaluate());
+        
+        exp.set('1', 'A');
+        exp.set('2', 'A');
+        exp.set('3', 'C');
+        exp.set('4', 'D');
+        System.assertEquals(true, exp.evaluate());
+
+        exp.set('1', 'A');
+        exp.set('2', 'B');
+        exp.set('3', 'C');
+        exp.set('4', 'C');
+        System.assertEquals(false, exp.evaluate());
+    }
+
 
 }
