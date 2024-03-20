@@ -290,5 +290,51 @@ private with sharing class LogicParser_TEST {
         System.assertEquals(false, exp.evaluate());
     }
 
+    //Datetime comparison - (1 > 2) || (3 < 4) 
+    @isTest
+    private static void shouldParse_UseCase13() {
+
+        LogicParser.Expression exp = new LogicParser().parseLogicalExpression('1 > 2');
+        exp.set('1', Datetime.now());
+        exp.set('2', Datetime.now().addDays(5));
+        
+        System.assertEquals(false, exp.evaluate());
+        
+        exp = new LogicParser().parseLogicalExpression('1 = 2');
+        exp.set('1', Datetime.now());
+        exp.set('2', Datetime.now());
+        
+        System.assertEquals(true, exp.evaluate());
+
+        exp = new LogicParser().parseLogicalExpression('1 <= 2');
+        exp.set('1', Datetime.now().addDays(-2));
+        exp.set('2', Datetime.now());
+        
+        System.assertEquals(true, exp.evaluate());
+    }
+
+    //Date comparison - (1 > 2) || (3 < 4) 
+    @isTest
+    private static void shouldParse_UseCase14() {
+
+        LogicParser.Expression exp = new LogicParser().parseLogicalExpression('1 > 2');
+        exp.set('1', Datetime.now().date());
+        exp.set('2', Datetime.now().addDays(5).date());
+        
+        System.assertEquals(false, exp.evaluate());
+        
+        exp = new LogicParser().parseLogicalExpression('1 = 2');
+        exp.set('1', Datetime.now().date());
+        exp.set('2', Datetime.now().date());
+        
+        System.assertEquals(true, exp.evaluate());
+
+        exp = new LogicParser().parseLogicalExpression('1 <= 2');
+        exp.set('1', Datetime.now().addDays(-2).date());
+        exp.set('2', Datetime.now().date());
+        
+        System.assertEquals(true, exp.evaluate());
+    }
+
 
 }

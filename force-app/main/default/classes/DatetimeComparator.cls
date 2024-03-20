@@ -30,24 +30,35 @@ Forked from Repo: https://github.com/seanpat09/apex-rules-engine
 
 */
 
-public class DataTypeComparatorFactory{
-    
-    public static DataTypeComparator get(List<LogicParser.Expression> children){
-        DataTypeComparator comparator;
+public class DatetimeComparator implements DataTypeComparator{
+    Datetime val1, val2;
+    public DatetimeComparator(Object val1, Object val2){
 
-        Object val1 = children[0].evaluate();
-        Object val2 = children[1].evaluate();
-
-        if(val1 instanceof String){
-            comparator = new StringComparator(val1, val2);
+        if(val1 instanceof Datetime){
+            this.val1 = (Datetime) val1;
+            this.val2 = (Datetime) val2;
+        } 
+        else{
+            this.val1 = DateHelper.parseDate( (String) val1);
+            this.val2 = DateHelper.parseDate( (String) val2);
         }
-        else if(val1 instanceof Double){
-            comparator = new DoubleComparator(val1, val2);
-        }
-        else if(val1 instanceof Datetime || val1 instanceof Date){
-            comparator = new DatetimeComparator(val1, val2);
-        }
-
-        return comparator;
+    }
+    public Object greaterThan(){
+        return val1 > val2;
+    }
+    public Object greaterThanOrEqual(){
+        return val1 >= val2;
+    }
+    public Object lessThan(){
+        return val1 < val2;
+    }
+    public Object lessThanOrEqual(){
+        return val1 <= val2;
+    }
+    public Object equalTo(){
+        return val1 == val2;
+    }
+    public Object notEqualTo(){
+        return val1 != val2;
     }
 }
